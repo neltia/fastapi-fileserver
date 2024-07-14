@@ -1,5 +1,6 @@
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
+from fastapi import UploadFile
 
 from app.common.models.response_result import ResponseResult
 from app.common.enums import ResponseCodeEnum
@@ -21,7 +22,7 @@ def get_file_list():
     return result
 
 
-def upload_file(file):
+def upload_file(file: UploadFile):
     hash_sha256 = hashlib.sha256(file.file.read()).hexdigest()
 
     file_location = Path(UPLOAD_DIR) / hash_sha256
@@ -37,4 +38,5 @@ def download_file(file_hash):
     file_path = Path(UPLOAD_DIR) / file_hash
     if not file_path.exists():
         raise HTTPException(status_code=404)
+
     return FileResponse(path=file_path, filename=file_hash)
