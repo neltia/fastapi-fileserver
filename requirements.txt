@@ -1,0 +1,8 @@
+# fastapi
+fastapi==0.110.2
+uvicorn==0.30.1
+
+# python additonal
+python-dotenv==0.21.1
+python-multipart==0.0.9
+aiofiles==24.1.0
