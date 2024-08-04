@@ -9,6 +9,8 @@ from app.file.models.upload_response import ret_file_info
 from pathlib import Path
 import hashlib
 import os
+import zipfile
+from datetime import datetime
 
 
 # Directory to store uploaded files
@@ -39,4 +41,32 @@ def download_file(file_hash):
     if not file_path.exists():
         raise HTTPException(status_code=404)
 
-    return FileResponse(path=file_path, filename=file_hash)
+    media_type = "application/octect-stream"
+    return FileResponse(path=file_path, filename=file_hash, media_type=media_type)
+
+
+def download_files_withzip(hash_list, zip_name, password):
+    # zip name
+    if zip_name is None:
+        zip_name = datetime.now().strftime("%Y%m%d_%H%M%S_fastapi_downloaded")
+    zip_name = zip_name + ".zip"
+    zip_path = zip_name
+
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for file_hash in hash_list:
+            file_path = Path(UPLOAD_DIR) / file_hash
+            if not file_path.exists():
+                raise HTTPException(status_code=404)
+
+            find_file_path = os.path.join(UPLOAD_DIR, file_hash)
+            f = open(find_file_path, "rb")
+            data = f.read()
+            f.close()
+
+            with open(find_file_path, "wb") as f:
+                f.write(data)
+            zipf.write(find_file_path, arcname=file_hash)
+
+    # ret download response
+    media_type = "application/zip"
+    return FileResponse(path=zip_path, filename=zip_name, media_type=media_type)
